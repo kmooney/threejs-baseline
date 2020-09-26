@@ -2,11 +2,11 @@ import * as THREE from "three";
 import * as CANNON from "cannon";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
 
+const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
 const GEOMETRIES = [
     function() {return {geo: new THREE.BoxGeometry(1,1,1), shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))}},
-    function() {return {geo: new THREE.SphereGeometry(1, 16, 16), shape: new CANNON.Sphere(0.5)}}
+    function() {return {geo: new THREE.SphereGeometry(0.5, 16, 16), shape: new CANNON.Sphere(0.5)}}
 ];
 
 function randInt(upTo) {
@@ -15,6 +15,8 @@ function randInt(upTo) {
 function init(){
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+    var playerCtl = {fwd: false, back: false, left: false, right: false};
 
     // Scene Lighting
     scene.fog = new THREE.Fog( 0x000000, 0, 500 );
@@ -31,12 +33,24 @@ function init(){
     renderer.setSize( window.innerWidth, window.innerHeight );
     document.body.appendChild( renderer.domElement );
 
-    var effect = new OutlineEffect( renderer );
+    var effect = new OutlineEffect( renderer, { defaultThickness: 0.001 } );
 
     var world = new CANNON.World();
     world.gravity.set(0,-9.82,0);
 
-
+    var playerGeo = new THREE.BoxGeometry(3,3,3)
+    var playerMat = new THREE.MeshPhongMaterial({color: 'gray'});
+    var playerMesh = new THREE.Mesh(playerGeo, playerMat);
+    playerGeo.castShadow=true;
+    scene.add(playerMesh);
+    var playerBod = new CANNON.Body({
+        mass:20,
+        position: new CANNON.Vec3(0,5,0),
+        shape: new CANNON.Box(new CANNON.Vec3(1.5, 1.5, 1.5))
+    });
+    world.addBody(playerBod);
+    playerBod.mesh = playerMesh;
+    
 
     // Create Cube
     function spawnCube(x,y,z){
@@ -47,7 +61,7 @@ function init(){
         cube.castShadow = true;
         scene.add( cube )
         var body = new CANNON.Body({
-            mass: 5,
+            mass: 1,
             position: new CANNON.Vec3(x,y,z),
             shape: g.shape
         })
@@ -66,7 +80,7 @@ function init(){
     groundBody.addShape(groundShape);
     world.addBody(groundBody);
     var geometry = new THREE.PlaneGeometry( 1000, 1000, 50, 50 );
-    var groundMaterial = new THREE.MeshPhongMaterial( { color: 0x100020, reflectivity: 1.0 } );
+    var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xe0e0f0, reflectivity: 1.0 } );
     var groundMesh = new THREE.Mesh( geometry, groundMaterial );
     groundMesh.receiveShadow = true;
     groundMesh.position.copy(groundBody.position)
@@ -92,9 +106,62 @@ function init(){
         })                    
     }
 
+    function updatePlayer() {
+        if (playerCtl.fwd) {
+            playerBod.position.z += 0.1;
+        }
+        if (playerCtl.back) {
+            playerBod.position.z -= 0.1;
+        }
+        if (playerCtl.left) {
+            playerBod.position.x += 0.1;
+        }
+        if (playerCtl.right) {
+            playerBod.position.x -= 0.1;
+        }
+    }
+
+    
+    window.addEventListener("keydown", function(e) {
+        
+        switch(e.key) {
+            case 'i':
+                playerCtl.fwd = true;
+            break;
+            case 'k':
+                playerCtl.back = true;
+            break;
+            case 'j':
+                playerCtl.left = true;
+            break;
+            case 'l':
+                playerCtl.right = true;
+            break;
+        }
+    });
+    window.addEventListener("keyup", function(e) {
+        
+        switch(e.key) {
+            case 'i':
+                playerCtl.fwd = false;
+            break;
+            case 'k':
+                playerCtl.back = false;
+            break;
+            case 'j':
+                playerCtl.left = false;
+            break;
+            case 'l':
+                playerCtl.right = false;
+            break;
+        }
+    });
+
+
     function animate() {
         requestAnimationFrame( animate );            
         updatePhysics();
+        updatePlayer();
     	effect.render( scene, camera );
     }
     animate();
