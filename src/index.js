@@ -3,6 +3,15 @@ import * as CANNON from "cannon";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+
+const GEOMETRIES = [
+    function() {return {geo: new THREE.BoxGeometry(1,1,1), shape: new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5))}},
+    function() {return {geo: new THREE.SphereGeometry(1, 16, 16), shape: new CANNON.Sphere(0.5)}}
+];
+
+function randInt(upTo) {
+    return Math.floor(Math.random() * upTo);
+}
 function init(){
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -27,19 +36,22 @@ function init(){
     var world = new CANNON.World();
     world.gravity.set(0,-9.82,0);
 
+
+
     // Create Cube
     function spawnCube(x,y,z){
-        var geometry = new THREE.BoxGeometry(1,1,1);
-        var material = new THREE.MeshLambertMaterial( { color: COLORS[Math.floor((Math.random() * COLORS.length))] } ); 
+        var g = GEOMETRIES[randInt(GEOMETRIES.length)]();
+        var geometry = g.geo;
+        var material = new THREE.MeshPhongMaterial( { color: COLORS[Math.floor((Math.random() * COLORS.length))] } ); 
         var cube = new THREE.Mesh( geometry, material );
         cube.castShadow = true;
         scene.add( cube )
         var body = new CANNON.Body({
             mass: 5,
             position: new CANNON.Vec3(x,y,z),
-            shape: new CANNON.Box(new CANNON.Vec3(0.5,0.5,0.5)),
+            shape: g.shape
         })
-        world.addBody( body);
+        world.addBody(body);
         body.mesh = cube;
     }
     setInterval(function(){ spawnCube(Math.random(),15,Math.random()) },500);
@@ -54,7 +66,7 @@ function init(){
     groundBody.addShape(groundShape);
     world.addBody(groundBody);
     var geometry = new THREE.PlaneGeometry( 1000, 1000, 50, 50 );
-    var groundMaterial = new THREE.MeshLambertMaterial( { color: 0x100020 } );
+    var groundMaterial = new THREE.MeshPhongMaterial( { color: 0x100020, reflectivity: 1.0 } );
     var groundMesh = new THREE.Mesh( geometry, groundMaterial );
     groundMesh.receiveShadow = true;
     groundMesh.position.copy(groundBody.position)
