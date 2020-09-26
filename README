@@ -1,0 +1,2 @@
+==test package==
+* run `npm clean-install` then `npm start` to get a server running on localhost:8080
