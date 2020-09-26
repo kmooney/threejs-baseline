@@ -2,7 +2,7 @@ import * as THREE from "three";
 import * as CANNON from "cannon";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-
+const COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
 function init(){
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -29,8 +29,8 @@ function init(){
 
     // Create Cube
     function spawnCube(x,y,z){
-        var geometry = new THREE.BoxGeometry();
-        var material = new THREE.MeshLambertMaterial( { color: 0xdddddd } ); 
+        var geometry = new THREE.BoxGeometry(1,1,1);
+        var material = new THREE.MeshLambertMaterial( { color: COLORS[Math.floor((Math.random() * COLORS.length))] } ); 
         var cube = new THREE.Mesh( geometry, material );
         cube.castShadow = true;
         scene.add( cube )
@@ -54,7 +54,7 @@ function init(){
     groundBody.addShape(groundShape);
     world.addBody(groundBody);
     var geometry = new THREE.PlaneGeometry( 1000, 1000, 50, 50 );
-    var groundMaterial = new THREE.MeshLambertMaterial( { color: 0x111111 } );
+    var groundMaterial = new THREE.MeshLambertMaterial( { color: 0x100020 } );
     var groundMesh = new THREE.Mesh( geometry, groundMaterial );
     groundMesh.receiveShadow = true;
     groundMesh.position.copy(groundBody.position)
