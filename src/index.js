@@ -109,15 +109,22 @@ function init(){
     function updatePlayer() {
         if (playerCtl.fwd) {
             playerBod.position.z += 0.1;
+            
         }
         if (playerCtl.back) {
             playerBod.position.z -= 0.1;
+            
         }
         if (playerCtl.left) {
             playerBod.position.x += 0.1;
+            
         }
         if (playerCtl.right) {
             playerBod.position.x -= 0.1;
+            
+        }
+        if (playerCtl.up) {
+            playerBod.position.y += 0.1;
         }
     }
 
@@ -136,6 +143,9 @@ function init(){
             break;
             case 'l':
                 playerCtl.right = true;
+                break;
+            case ' ':
+                playerCtl.up = true;
             break;
         }
     });
@@ -154,6 +164,9 @@ function init(){
             case 'l':
                 playerCtl.right = false;
             break;
+            case ' ':
+                playerCtl.up = false;
+                break;
         }
     });
 
